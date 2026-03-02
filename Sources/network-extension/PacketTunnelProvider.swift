@@ -7,7 +7,7 @@ import NetworkExtension
 import QSleeveKit
 enum PacketTunnelProviderError: String, Error {
     case invalidProtocolConfiguration
-    case cantParseWgQuickConfig
+    case cantParseQSleeveConfig
 }
 
 class PacketTunnelProvider: NEPacketTunnelProvider {
@@ -18,15 +18,18 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     }
 
     private lazy var adapter: QSleeveAdapter = {
-        return QSleeveAdapter(with: self) { [weak self] _, message in
-            self?.log(message)
+        return QSleeveAdapter(with: self) { [weak self] logLevel, message in
+            self?.log("\(logLevel): \(message)")
         }
     }()
 
     func log(_ message: String) {
-        NSLog("WireGuard Tunnel: %@\n", message)
-Add Bundle Idenstifer of Network can find in the general tab of the target
-        if let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "bundleIdentifierOfNetworkExtension") {
+        NSLog("QSleeve Tunnel: %@\n", message)
+        
+        // Placeholder for user: Replace with actual App Group identifier
+        let appGroupID = "bundleIdentifierOfNetworkExtension"
+        
+        if let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupID) {
             let fileURL = containerURL.appendingPathComponent("vpn_crash_logs.txt")
             let formatter = DateFormatter()
             formatter.dateFormat = "HH:mm:ss"
@@ -53,25 +56,26 @@ Add Bundle Idenstifer of Network can find in the general tab of the target
     override func startTunnel(options: [String : NSObject]?, completionHandler: @escaping (Error?) -> Void) {
         log("Starting tunnel")
         
-        var parsedWgQuickConfig: String? = nil
+        var parsedQSleeveConfig: String? = nil
         
+        // Casing is WgQuickConfig to match MOBILECONFIG.md and SDK's providerConfiguration
         if let options = options {
             if let wgData = options["WgQuickConfig"] as? Data {
-                parsedWgQuickConfig = String(data: wgData, encoding: .utf8)
+                parsedQSleeveConfig = String(data: wgData, encoding: .utf8)
             } else if let wgString = options["WgQuickConfig"] as? String {
-                parsedWgQuickConfig = wgString
+                parsedQSleeveConfig = wgString
             }
         }
         
-        if parsedWgQuickConfig == nil {
+        if parsedQSleeveConfig == nil {
             if let protocolConfiguration = self.protocolConfiguration as? NETunnelProviderProtocol,
                let providerConfiguration = protocolConfiguration.providerConfiguration,
                let fallbackConfig = providerConfiguration["WgQuickConfig"] as? String {
-                parsedWgQuickConfig = fallbackConfig
+                parsedQSleeveConfig = fallbackConfig
             }
         }
         
-        guard let WgQuickConfig = parsedWgQuickConfig else {
+        guard let qsConfig = parsedQSleeveConfig else {
             log("Invalid provider configuration: missing WgQuickConfig")
             completionHandler(PacketTunnelProviderError.invalidProtocolConfiguration)
             return
@@ -79,17 +83,17 @@ Add Bundle Idenstifer of Network can find in the general tab of the target
 
         let tunnelConfiguration: TunnelConfiguration
         do {
-            tunnelConfiguration = try TunnelConfiguration(fromWgQuickConfig: WgQuickConfig)
+            tunnelConfiguration = try TunnelConfiguration(fromQSleeveConfig: qsConfig)
         } catch {
-            log("wg-quick config not parseable. Error: \(error)")
-            completionHandler(PacketTunnelProviderError.cantParseWgQuickConfig)
+            log("QSleeve config not parseable. Error: \(error)")
+            completionHandler(PacketTunnelProviderError.cantParseQSleeveConfig)
             return
         }
 
         adapter.start(tunnelConfiguration: tunnelConfiguration) { [weak self] adapterError in
             guard let self = self else { return }
             if let adapterError = adapterError {
-                self.log("WireGuard adapter error: \(adapterError.localizedDescription)")
+                self.log("QSleeve adapter error: \(adapterError.localizedDescription)")
             } else {
                 let interfaceName = self.adapter.interfaceName ?? "unknown"
                 self.log("Tunnel interface is \(interfaceName)")
@@ -103,7 +107,7 @@ Add Bundle Idenstifer of Network can find in the general tab of the target
         adapter.stop { [weak self] error in
             guard let self = self else { return }
             if let error = error {
-                self.log("Failed to stop WireGuard adapter: \(error.localizedDescription)")
+                self.log("Failed to stop QSleeve adapter: \(error.localizedDescription)")
             }
             completionHandler()
 

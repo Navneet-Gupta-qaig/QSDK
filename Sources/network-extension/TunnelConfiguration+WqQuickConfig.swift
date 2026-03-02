@@ -38,11 +38,11 @@ extension TunnelConfiguration {
         case multipleEntriesForKey(String)
     }
 
-    convenience init(fromWgQuickConfig WgQuickConfig: String, called name: String? = nil) throws {
+    convenience init(fromQSleeveConfig qsConfig: String, called name: String? = nil) throws {
         var interfaceConfiguration: InterfaceConfiguration?
         var peerConfigurations = [PeerConfiguration]()
 
-        let lines = WgQuickConfig.split { $0.isNewline }
+        let lines = qsConfig.split { $0.isNewline }
 
         var parserState = ParserState.notInASection
         var attributes = [String: String]()
@@ -126,7 +126,7 @@ extension TunnelConfiguration {
         }
     }
 
-    func asWgQuickConfig() -> String {
+    func asQSleeveConfig() -> String {
         var output = "[Interface]\n"
         output.append("PrivateKey = \(interface.privateKey.base64Key)\n")
         if let listenPort = interface.listenPort {
