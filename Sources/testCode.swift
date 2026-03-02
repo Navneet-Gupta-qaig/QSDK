@@ -31,7 +31,7 @@ struct ContentView: View {
     // MARK: - Config
     let authUrl = "http://115.245.211.54:9001"
     let privateIp = "http://172.16.20.103:8080/tm-api/company/ping"
-    let providerBundleIdentifier = "com.QAIG.Qsleeve-sdk-test.network-extension"
+    let providerBundleIdentifier = "com.QAIG.QTesting.network-testing"
     
     private let qsleeve = QSleeveSDK()
     
@@ -152,8 +152,8 @@ struct ContentView: View {
         }
         .onAppear {
             log("👀 View appeared. Setting up status observer...")
-            // Force debug level logs
-            QSleeveLogger.enableLogs(level: .debug)
+            // Debug logging can be enabled here if the SDK exposes an API.
+            log("🔧 Debug logging hook not configured (no QSleeveLogger in scope)")
             
             qsleeve.onStatusUpdate = { status in
                 log("📡 STATUS CHANGE: \(status.asText.uppercased()) (rawValue: \(status.rawValue))")
@@ -250,18 +250,17 @@ struct ContentView: View {
         log("   AuthURL: \(authUrl)")
         log("   BundleID: \(providerBundleIdentifier)")
         
-        // Typical payload example
-        let credentials: [String: Any] = ["username": "admin", "password": "password123", "ldap_sso": 0]
+        let credentials: [String: Any] = ["username": "admin", "password": "Troop#345", "ldap_sso": 0]
         isInitializing = true
         errorMessage = nil
-        
+        log("initialize body:// \(credentials) , \(authUrl), \(providerBundleIdentifier )")
         Task {
             let result = await qsleeve.initialize(
                 body: credentials,
                 authUrl: authUrl,
                 providerBundleId: providerBundleIdentifier
             )
-            
+ 
             await MainActor.run {
                 isInitializing = false
                 switch result {
@@ -275,8 +274,8 @@ struct ContentView: View {
                     }
                     
                 case .failure(let error):
-                    log("❌ initialize() FAILED: \(error.message) (code: \(error.errorCode))")
-                    self.errorMessage = "\(error.errorCode): \(error.message)"
+                    log("❌ initialize() FAILED: \(error.localizedDescription) (code: \((error as NSError).code))")
+                    self.errorMessage = "\((error as NSError).code): \(error.localizedDescription)"
                 }
             }
         }
@@ -310,8 +309,8 @@ struct ContentView: View {
                     log("   status: \(response["status"] ?? "?")")
                     
                 case .failure(let error):
-                    log("❌ connect() FAILED: \(error.message) (code: \(error.errorCode))")
-                    self.errorMessage = "\(error.errorCode): \(error.message)"
+                    log("❌ connect() FAILED: \(error.localizedDescription) (code: \((error as NSError).code))")
+                    self.errorMessage = "\((error as NSError).code): \(error.localizedDescription)"
                 }
             }
         }
@@ -344,8 +343,8 @@ struct ContentView: View {
                     }
                     
                 case .failure(let error):
-                    log("❌ reInitialize() FAILED: \(error.message) (code: \(error.errorCode))")
-                    self.errorMessage = "\(error.errorCode): \(error.message)"
+                    log("❌ reInitialize() FAILED: \(error.localizedDescription) (code: \((error as NSError).code))")
+                    self.errorMessage = "\((error as NSError).code): \(error.localizedDescription)"
                 }
             }
         }
@@ -360,7 +359,7 @@ struct ContentView: View {
             case .success(let data):
                 log("✅ Disconnected. \(data["status"] ?? "")")
             case .failure(let err):
-                log("❌ Disconnect error: \(err.message)")
+                log("❌ Disconnect error: \(err.localizedDescription) (code: \((err as NSError).code))")
             }
         }
     }
@@ -403,7 +402,7 @@ struct ContentView: View {
                 log("   Tunnel Up & Reachable: \(data["status"] ?? false)")
                 log("   Result Code: \(data["code"] ?? "")")
             case .failure(let err):
-                log("❌ getStatus() error: \(err.message)")
+                log("❌ getStatus() error: \(err.localizedDescription) (code: \((err as NSError).code))")
             }
         }
     }
@@ -465,3 +464,4 @@ extension NEVPNStatus {
         }
     }
 }
+
