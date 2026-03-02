@@ -4,20 +4,18 @@
 import PackageDescription
 
 let package = Package(
-    name: "QSDK",
+    name: "QSleeveSDK",
+    platforms: [
+        .iOS(.v26),.macOS(.v26)
+      ],
     products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
-        .library(
-            name: "QSDK",
-            targets: ["QSDK"]
-        ),
+        .library(name: "QSleeveSDK", targets: ["QSleeveSDK"])
     ],
     targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
-        .target(
-            name: "QSDK"
-        ),
-
+        .binaryTarget(
+            name: "QSleeveSDK",
+            url: "https://github.com/Navneet-Gupta-qaig/QSleeve_IOS_SDK/releases/download/v0.1.0/QSleeveSDK.xcframework.zip",
+            checksum: "6d65b5604e375da4f3f2f4f2185133f822c982f86cb7100e0ec3bc2f90b6644d"
+        )
     ]
 )
