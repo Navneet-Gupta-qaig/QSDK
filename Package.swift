@@ -14,7 +14,7 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "QSleeveSDK",
-            url: "https://github.com/Navneet-Gupta-qaig/QSleeve_IOS_SDK/releases/download/v0.1.0/QSleeveSDK.xcframework.zip",
+            url: "https://github.com/Navneet-Gupta-qaig/QSDK/releases/download/v0.0.1/QSleeveSDK.xcframework.zip",
             checksum: "6d65b5604e375da4f3f2f4f2185133f822c982f86cb7100e0ec3bc2f90b6644d"
         )
     ]
