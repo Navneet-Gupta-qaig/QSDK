@@ -31,7 +31,7 @@ struct ContentView: View {
     // MARK: - Config
     let authUrl = "http://115.245.211.54:9001"
     let privateIp = "http://172.16.20.103:8080/tm-api/company/ping"
-    let providerBundleIdentifier = "com.QAIG.QTesting.network-testing"
+    let providerBundleIdentifier = "bundleIdentifierOfNetworkExtension"
     
     private let qsleeve = QSleeveSDK()
     

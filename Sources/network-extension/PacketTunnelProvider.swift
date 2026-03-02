@@ -25,7 +25,8 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
 
     func log(_ message: String) {
         NSLog("WireGuard Tunnel: %@\n", message)
-        if let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.qaig.Qsleeve-sdk-test") {
+Add Bundle Idenstifer of Network can find in the general tab of the target
+        if let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "bundleIdentifierOfNetworkExtension") {
             let fileURL = containerURL.appendingPathComponent("vpn_crash_logs.txt")
             let formatter = DateFormatter()
             formatter.dateFormat = "HH:mm:ss"
