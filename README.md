@@ -1,117 +1,58 @@
-# QSleeve iOS SDK
+# QSDK: QSleeve iOS SDK Implementation Guide
 
 Welcome to the QSleeve iOS SDK distribution repository. This repository provides the pre-compiled binary versions of the QSleeve SDK, allowing for easy integration into your iOS applications.
 
-## Integration via Swift Package Manager
+---
 
-The preferred way to integrate the QSleeve SDK is via Swift Package Manager (SPM).
+## Quick Start Flow
 
-1. In Xcode, go to **File > Add Package Dependencies...**
-2. Enter the URL of this repository: `[https://github.com/QSleeve/QSleeve_IOS_SDK](https://github.com/Navneet-Gupta-qaig/QSleeve_IOS_SDK.git)`
-3. Select the branch and add main .
+Follow these steps in order to set up your project and integrate the SDK successfully.
 
-### Manual Integration
+### 1. Prerequisites
 
-Alternatively, you can download the `QSleeveSDK.xcframework.zip` from the latest release, unzip it, and add the contained `.xcframework` files to your Xcode project's **Frameworks, Libraries, and Embedded Content** section.
+Before starting, ensure you have the following:
 
-## Requirements
+- **iOS 26.0+** / **macOS 26.0+**
+- **Xcode 15+**
+- **App Group ID**: Required for communication between the App and the Network Extension.
 
-- **iOS 15.0** or later
-- **Xcode 15.0** or later
-- **Swift 5.9** or later
+### 2. Add Dependencies
 
-## 🛠 Prerequisites & Developer Settings
+The QSleeve solution requires two main components:
 
-Before integrating the SDK into your project, ensure that your Apple Developer Account and Xcode Project are configured correctly.
+1. **QSleeveSDK**: The main core library (distributed as a binary XCFramework).
+2. **QSleeveKit**: The tunnel adapter library required by the Network Extension.
 
-### 1. App Identifiers & Certificates
+#### Add via Swift Package Manager (SPM)
 
-- Your Apple Developer Account must have the **Network Extension** entitlement enabled for your App ID.
-- You must create a secondary App ID for your **Packet Tunnel Provider** network extension.
-- Provisioning Profiles for both the Main App and the Extension must include the Network Extension features.
+In Xcode, go to **File > Add Package Dependencies** and add:
 
-### 2. Xcode Project Capabilities
+- **QSleeveSDK**: `https://github.com/Navneet-Gupta-qaig/QSDK.git`
+  - **Dependency Rule**: Select **Branch** and enter `main`.
+  - **Target**: Choose your **Main App** target when prompted.
 
-You must add the following capabilities to **BOTH** your Main App Target and your Network Extension Target:
+- **QSleeveKit** (Required for Network Extension): `https://github.com/Navneet-Gupta-qaig/Qsleeve-sdk-apple.git`
+  - **Dependency Rule**: Select **Branch** and enter `main`.
+  - **Target**: Choose your **Network Extension** target when prompted.
 
-1. **Network Extensions**:
-   - Check the box for **Packet Tunnel**.
-2. **App Groups**:
-   - Create a shared App Group (e.g., `group.com.yourcompany.qsleeve`).
-   - Enable this App Group on both the app and the extension so they can share configuration data.
+### 3. Setup Network Extension
 
-### 3. Entitlements Configuration
+The Network Extension is the core of the VPN. It must be added as a separate target in your project.
 
-Ensure your `.entitlements` files contain the required specific keys:
+1. **Create Target**: Add a new "network-extension" target to your Xcode project.
+2. **Entitlements**: Add the "Network Extensions" and "App Groups" capabilities to both the Main App and the Network Extension targets and check the Packet Tunnel option .
+3. **Implementation**: Copy the content of [`PacketTunnelProvider.swift`](Sources/network-extension/PacketTunnelProvider.swift) into your extension's main file.
+4. **App Group Configuration**:
+   - Find the line: `forSecurityApplicationGroupIdentifier: "bundleIdentifierOfNetworkExtension"`
+   - Replace it with your actual **App Group ID** (e.g., `group.com.yourcompany.projectName`).
 
-- **Main App `Entitlements`**:
-  - `com.apple.developer.networking.vpn.api` -> `allow-vpn` (Array)
-  - `com.apple.developer.networking.networkextension` -> `packet-tunnel-provider` (Array)
-- **Network Extension `Entitlements`**:
-  - `com.apple.developer.networking.networkextension` -> `packet-tunnel-provider` (Array)
+### 4. Implement App Logic
 
-### 4. Background Modes (Main App)
+Use the [`testCode.swift`](Sources/testCode.swift) as a reference for your main UI and SDK interaction.
 
-If your app needs to monitor or maintain the VPN in the background:
+---
 
-- Go to **Signing & Capabilities** -> **Background Modes**.
-- Check **Network Authentication**.
-
-## Post-Installation Steps
-
-After successfully adding the package to your project, ensure you follow these steps:
-
-### 1. Packet Tunnel Implementation
-
-You need to provide the implementation for your Network Extension. This repository includes the required template files in the `NetworkExtension` directory. **Copy** the following files into your **Network Extension Target**:
-
-- `PacketTunnelProvider.swift`
-- `String+ArrayConversion.swift`
-- `TunnelConfiguration+WqQuickConfig.swift`
-
-**Important:**
-
-- Ensure these files are targeted **ONLY** to your Network Extension.
-- Update the `applicationGroupIdentifier` in `PacketTunnelProvider.swift` (line 28) to match your shared App Group.
-
-### 2. Basic Setup
-
-In your `AppDelegate` or SwiftUI `App` struct, initialize the logger to see SDK activity:
-
-```swift
-import QSleeveSDK
-
-// Initialize Logger
-QSleeveLogger.enableLogs(level: .info)
-```
-
-### 3. Sample SwiftUI Implementation
-
-For a complete reference on how to use the SDK (Initialize, Connect, Disconnect, Status, etc.), you can refer to the sample code provided in the `QSleeveSDK` documentation or follow the structure in our reference application.
-
-A minimal connection flow looks like this:
-
-```swift
-let qsleeve = QSleeveSDK()
-
-// 1. Initialize with your credentials
-let authPayload: [String: Any] = ["username": "admin", "password": "password123"]
-let initResult = await qsleeve.initialize(
-    body: authPayload,
-    authUrl: "https://your-auth-server.com",
-    providerBundleId: "com.yourcompany.app.extension"
-)
-
-if case .success(let data) = initResult, let config = data["config"] as? [String: Any] {
-    // 2. Connect using the returned configuration
-    let connectResult = await qsleeve.connect(configJson: config)
-    if case .success = connectResult {
-        print("VPN Connected successfully!")
-    }
-}
-```
-
-## 🚀 Unified SDK Core APIs
+### SDK Core APIs
 
 The SDK manages the tunnel state internally, providing 5 main API entry points for simplicity and robustness.
 
@@ -168,3 +109,14 @@ let result = await qsleeve.reInitialize(configJson: savedConfig)
 ```
 
 Automatically re-authenticates and updates configuration using cacehd credentials. This is useful for auto-recovery if the session expires or network conditions change.
+
+---
+
+## ⚠️ Important Considerations
+
+- **App Group ID**: Required for communication between the App and the Network Extension.
+- **Background Modes**: If your app needs to monitor or maintain the VPN in the background, go to **Signing & Capabilities** -> **Background Modes** and check **Network Authentication**.
+
+---
+
+© 2022-2026 QAIG Pvt. Ltd. All Rights Reserved.
