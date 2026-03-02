@@ -38,11 +38,11 @@ extension TunnelConfiguration {
         case multipleEntriesForKey(String)
     }
 
-    convenience init(fromWgQuickConfig wgQuickConfig: String, called name: String? = nil) throws {
+    convenience init(fromWgQuickConfig WgQuickConfig: String, called name: String? = nil) throws {
         var interfaceConfiguration: InterfaceConfiguration?
         var peerConfigurations = [PeerConfiguration]()
 
-        let lines = wgQuickConfig.split { $0.isNewline }
+        let lines = WgQuickConfig.split { $0.isNewline }
 
         var parserState = ParserState.notInASection
         var attributes = [String: String]()

@@ -56,9 +56,9 @@ Add Bundle Idenstifer of Network can find in the general tab of the target
         var parsedWgQuickConfig: String? = nil
         
         if let options = options {
-            if let wgData = options["wgQuickConfig"] as? Data {
+            if let wgData = options["WgQuickConfig"] as? Data {
                 parsedWgQuickConfig = String(data: wgData, encoding: .utf8)
-            } else if let wgString = options["wgQuickConfig"] as? String {
+            } else if let wgString = options["WgQuickConfig"] as? String {
                 parsedWgQuickConfig = wgString
             }
         }
@@ -66,20 +66,20 @@ Add Bundle Idenstifer of Network can find in the general tab of the target
         if parsedWgQuickConfig == nil {
             if let protocolConfiguration = self.protocolConfiguration as? NETunnelProviderProtocol,
                let providerConfiguration = protocolConfiguration.providerConfiguration,
-               let fallbackConfig = providerConfiguration["wgQuickConfig"] as? String {
+               let fallbackConfig = providerConfiguration["WgQuickConfig"] as? String {
                 parsedWgQuickConfig = fallbackConfig
             }
         }
         
-        guard let wgQuickConfig = parsedWgQuickConfig else {
-            log("Invalid provider configuration: missing wgQuickConfig")
+        guard let WgQuickConfig = parsedWgQuickConfig else {
+            log("Invalid provider configuration: missing WgQuickConfig")
             completionHandler(PacketTunnelProviderError.invalidProtocolConfiguration)
             return
         }
 
         let tunnelConfiguration: TunnelConfiguration
         do {
-            tunnelConfiguration = try TunnelConfiguration(fromWgQuickConfig: wgQuickConfig)
+            tunnelConfiguration = try TunnelConfiguration(fromWgQuickConfig: WgQuickConfig)
         } catch {
             log("wg-quick config not parseable. Error: \(error)")
             completionHandler(PacketTunnelProviderError.cantParseWgQuickConfig)
