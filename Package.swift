@@ -15,7 +15,7 @@ let package = Package(
         .binaryTarget(
             name: "QSleeveSDK",
             url: "https://github.com/Navneet-Gupta-qaig/QSDK/releases/download/v0.0.1/QSleeveSDK.xcframework.zip",
-            checksum: "6d65b5604e375da4f3f2f4f2185133f822c982f86cb7100e0ec3bc2f90b6644d"
+            checksum: "f3e8d4d240162eff1a6e61a66a0076ac93717bad8d47e869513a7d92d8a7edd6"
         )
     ]
 )
