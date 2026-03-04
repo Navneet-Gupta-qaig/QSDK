@@ -40,11 +40,24 @@ In Xcode, go to **File > Add Package Dependencies** and add:
 The Network Extension is the core of the VPN. It must be added as a separate target in your project.
 
 1. **Create Target**: Add a new "network-extension" target to your Xcode project.
-2. **Entitlements**: Add the "Network Extensions" and "App Groups" capabilities to both the Main App and the Network Extension targets and check the Packet Tunnel option .
+2. **Entitlements Configuration**:
+   - **Main App**:
+     - `com.apple.developer.networking.networkextension`: `packet-tunnel-provider`
+     - `com.apple.developer.networking.vpn.api`: `allow-vpn`
+     - `com.apple.security.application-groups`: Your App Group ID (e.g., `group.com.company.app`)
+   - **Network Extension**:
+     - `com.apple.developer.networking.networkextension`: `packet-tunnel-provider`
+     - `com.apple.security.application-groups`: Your App Group ID
 3. **Implementation**: Copy the content of [`PacketTunnelProvider.swift`](Sources/network-extension/PacketTunnelProvider.swift) into your extension's main file.
-4. **App Group Configuration**:
-   - Find the line: `forSecurityApplicationGroupIdentifier: "bundleIdentifierOfNetworkExtension"`
-   - Replace it with your actual **App Group ID** (e.g., `group.com.yourcompany.projectName`).
+4. **Required Manual Changes**:
+
+| File                         | Line | Key Change         | Implementation Detail                                                                      |
+| :--------------------------- | :--- | :----------------- | :----------------------------------------------------------------------------------------- |
+| `PacketTunnelProvider.swift` | 29   | App Group ID       | Replace `"group.com.qaig.QSleeve"` with your **Actual App Group ID**.                      |
+| `testCode.swift`             | 32   | `authUrl`          | Update this to your server environment.                                                    |
+| `testCode.swift`             | 34   | `providerBundleId` | Replace `"bundleIdentifierOfNetworkExtension"` with your **Extension Target's Bundle ID**. |
+
+---
 
 ### 4. Implement App Logic
 
@@ -114,8 +127,21 @@ Automatically re-authenticates and updates configuration using cacehd credential
 
 ## ⚠️ Important Considerations
 
-- **App Group ID**: Required for communication between the App and the Network Extension.
-- **Background Modes**: If your app needs to monitor or maintain the VPN in the background, go to **Signing & Capabilities** -> **Background Modes** and check **Network Authentication**.
+- **App Group ID**: Required for communication and log sharing. Ensure the ID matches exactly in the Main App entitlements, Extension entitlements, and the `PacketTunnelProvider.swift` code.
+- **Background Modes**: Go to **Signing & Capabilities** -> **Background Modes** and check **Network Authentication**.
+
+---
+
+## 🛠️ Troubleshooting
+
+### "Permission Denied" (Code 10) on Initialize
+
+If `initialize()` fails with `permission denied`:
+
+1. **Check Entitlements**: Ensure the Main App has the `allow-vpn` and `packet-tunnel-provider` entitlements.
+2. **App Group ID**: Verify that the App Group ID in your entitlements matches what you passed to the SDK.
+3. **Bundle ID**: Ensure the `providerBundleId` passed to `initialize()` exactly matches the Bundle Identifier of your Network Extension target.
+4. **Provisioning**: Ensure you are using a Developer Profile that supports Network Extensions.
 
 ---
 

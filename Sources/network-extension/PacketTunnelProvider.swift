@@ -25,8 +25,9 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
 
     func log(_ message: String) {
         NSLog("WireGuard Tunnel: %@\n", message)
-Add Bundle Idenstifer of Network can find in the general tab of the target
-        if let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "bundleIdentifierOfNetworkExtension") {
+        // IMPORTANT: Replace this with your shared App Group ID (e.g., "group.com.yourcompany.app")
+        // This must match the App Group capability added to both the App and Extension targets.
+        if let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "YOUR_APP_GROUP_ID") {
             let fileURL = containerURL.appendingPathComponent("vpn_crash_logs.txt")
             let formatter = DateFormatter()
             formatter.dateFormat = "HH:mm:ss"
